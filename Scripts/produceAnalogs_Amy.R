@@ -53,22 +53,11 @@ shape <- raster("../Data/MaskRes025.tif")
 # plot(eez)
 
 ## -----------------------
-## List available results
-scenario <- 'ssp585'
-resultsFolderMain <- paste0("../Data/climateDissimilarity/", scenario)
-resultsScope <- "sigmaNovelty" # sigmaNovelty sigmaDisappearance 
-resultsFolders <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=TRUE)
-resultsNames <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=FALSE)
-resultsNames <- gsub("/climateDissimilarity.RData","",resultsNames)
-
-resultsFolders
-resultsNames
-
-## -----------------------
 # load in data 
 
 load("../Results/climateDissimilarity/ssp585/Salmo salar/climateDissimilarity.RData")
-sal <- dataStructureResult
+s <- dataStructureResult
+sal <- s[1:1000,]
 sal1<- sal[1:100,]
 
 names(sal1)[names(sal1) == 'x'] <- 'long'
@@ -102,6 +91,8 @@ install.packages("wesanderson")
 library(wesanderson)
 names(wes_palettes)
 
+world <- map_data("world")
+
 ggplot() + 
   geom_map(
     data = world, map = world,
@@ -119,28 +110,12 @@ ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="
 
 # Adding lines to connect climates ----
 
-# change points to sf before you can denote by colour (later edit: this didn't help but leaving in for future use)
+# new df with cell, lat and long values  
+df <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat, n.long = sal1$analogNovelty.x, 
+                 n.lat = sal1$analogNovelty.y, d.long = sal1$analogDisappearance.x, 
+                 d.lat = sal1$analogDisappearance.y)
 
-df_c <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat)
-df_c <-st_as_sf(df_c %>% select(cell, c.long, c.lat), coords = c("c.long", "c.lat"), crs = 4326) %>%
-  rename(current = geometry) 
-
-df_n <- data.frame(cell = sal1$cell, n.long = sal1$analogNovelty.x, n.lat = sal1$analogNovelty.y)
-df_n <-st_as_sf(df_n %>% select(cell, n.long, n.lat), coords = c("n.long", "n.lat"), crs = 4326) %>%
-  rename(novel = geometry)
-                   
-df_d <- data.frame(cell = sal1$cell, d.long = sal1$analogDisappearance.x, 
-                   d.lat = sal1$analogDisappearance.y)
-df_d <-st_as_sf(df_d %>% select(cell, d.long, d.lat), coords = c("d.long", "d.lat"), crs = 4326) %>%
-  rename(disappearing = geometry)
-
-df_sf <- cbind(df_c, df_n, df_d)
-df_sf <- df_sf[ , -c(2, 3)]
-
-df_sf
-
-# adding connecting lines 
-
+#  create new data frames for the connecting lines added between coord cols - geom_path extracting x and y length (300) must be the same as the df length (100)
 line_data <- data.frame(x = c(df$c.long, df$n.long), y = c(df$c.lat, df$n.lat), cell = df$cell)
 line_data2 <- data.frame(x = c(df$c.long, df$d.long), y = c(df$c.lat, df$d.lat), cell = df$cell)
 
@@ -165,14 +140,40 @@ ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="
 
 # Mapping Salmo salar full dataset ----
 
-# full_dat <- data.frame(long = rbind(sal$))      #I'll come back to this
+full_dat <- data.frame(cell = sal$cell, c.long = sal$long, c.lat = sal$lat, 
+                       n.long = sal$analogNovelty.x, 
+                       n.lat = sal$analogNovelty.y, d.long = sal$analogDisappearance.x, 
+                       d.lat = sal$analogDisappearance.y)
+
+
+### NEXT STEPS ####
+# map all data - issue creating full_dat with even 1000 rows... 
+# represent data better with shape data ?
+# group points (size of point based on scale) ?
+
+
+# change points to sf before you can denote by colour (later edit: this wasn't used but leaving in for future use)
+
+df_c <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat)
+df_c <-st_as_sf(df_c %>% select(cell, c.long, c.lat), coords = c("c.long", "c.lat"), crs = 4326) %>%
+  rename(current = geometry) 
+
+df_n <- data.frame(cell = sal1$cell, n.long = sal1$analogNovelty.x, n.lat = sal1$analogNovelty.y)
+df_n <-st_as_sf(df_n %>% select(cell, n.long, n.lat), coords = c("n.long", "n.lat"), crs = 4326) %>%
+  rename(novel = geometry)
+                   
+df_d <- data.frame(cell = sal1$cell, d.long = sal1$analogDisappearance.x, 
+                   d.lat = sal1$analogDisappearance.y)
+df_d <-st_as_sf(df_d %>% select(cell, d.long, d.lat), coords = c("d.long", "d.lat"), crs = 4326) %>%
+  rename(disappearing = geometry)
+
+df_sf <- cbind(df_c, df_n, df_d)
+df_sf <- df_sf[ , -c(2, 3)]
+
+df_sf
 
 
 
-
-# map all data
-# represent data better with shape data 
-# group points (size of point based on scale)
 
 
 
