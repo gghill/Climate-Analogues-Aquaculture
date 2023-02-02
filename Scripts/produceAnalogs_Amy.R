@@ -87,28 +87,6 @@ points(salar585_subset[ , c("analogNovelty.x", "analogNovelty.y")], pch = 20, co
 points(salar585_subset[ , c("analogDisappearance.x", "analogDisappearance.y")], pch = 20, col = "green")
 
 
-# ggplot
-world <- map_data("world")  
-
-sal <- ggplot() +
-  geom_map(
-    data = world, map = world,
-    aes(map_id = region),
-    color = "grey", fill = "lightgray", size = 0.01
-  ) +
-  geom_point(data=sal1, aes(x = long, y = lat)) +
-  geom_point(data=sal1, aes(x = analogNovelty.x, y = analogNovelty.y)) +
-  geom_point(data=sal1, aes(x = analogDisappearance.x, y = analogDisappearance.y)) +
-  xlim(-80, 80) + ylim(10, 80) +
-  theme(legend.position = bottom)  + 
-  scale_fill_manual(values = c('darkred', 'blue', 'darkgreen'), 
-                      labels = c('Current climate', 'Novel climate', 'Dissappearing climate'))
-
-  
-sal      #legend is not working
-
-
-
 # Combine coords into one df (but can't connect points based on cells)
 current <- data.frame(long = sal1$long, lat = sal1$lat)
 current$climate <- "current"
@@ -141,7 +119,7 @@ ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="
 
 # Adding lines to connect climates ----
 
-#have to change points to sf before you can denote by colour...
+# change points to sf before you can denote by colour (later edit: this didn't help but leaving in for future use)
 
 df_c <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat)
 df_c <-st_as_sf(df_c %>% select(cell, c.long, c.lat), coords = c("c.long", "c.lat"), crs = 4326) %>%
@@ -161,36 +139,39 @@ df_sf <- df_sf[ , -c(2, 3)]
 
 df_sf
 
-# 
+# adding connecting lines 
 
-sal <- ggplot() +
+line_data <- data.frame(x = c(df$c.long, df$n.long), y = c(df$c.lat, df$n.lat), cell = df$cell)
+line_data2 <- data.frame(x = c(df$c.long, df$d.long), y = c(df$c.lat, df$d.lat), cell = df$cell)
+
+ggplot() +
   geom_map(
     data = world, map = world,
     aes(map_id = region),
     color = "grey", fill = "lightgray", size = 0.01
-  ) +
-  geom_point(data=sal1, aes(x = long, y = lat)) +
-  geom_point(data=sal1, aes(x = analogNovelty.x, y = analogNovelty.y)) +
-  geom_point(data=sal1, aes(x = analogDisappearance.x, y = analogDisappearance.y)) +
+  ) + theme_bw()  +
+  geom_path(data = line_data, aes(x = x, y = y, group = cell), color = "#B2ABD2", alpha = 0.4) +
+  geom_path(data = line_data2, aes(x = x, y = y, group = cell), color = "#F4A582", alpha = 0.4) +
+  geom_point(data=df, aes(x = c.long, y = c.lat, color = "current")) +
+  geom_point(data=df, aes(x = n.long, y = n.lat, color = "novel")) +
+  geom_point(data=df, aes(x = d.long, y = d.lat, color = "disappearing")) + 
+  labs(title = "Salmo salar SSP5-8.5", x = "Longitude", y = "Latitude") +
+  theme(plot.title = element_text(hjust = 0.5)) +
   xlim(-80, 80) + ylim(10, 80) +
-  scale_colour_manual(values = wes_palette("GrandBudapest1", n = 3))
+  scale_colour_brewer(palette = "Dark2", name = "Climate", 
+                      labels = c("Current",  "Disappearing", "Novel")) 
 
-
-
-
-sal
-
-# convert coords to sf for each?
-
-
+ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset_lines.png", width = 6, height = 4)
 
 # Mapping Salmo salar full dataset ----
 
 # full_dat <- data.frame(long = rbind(sal$))      #I'll come back to this
 
+
+
+
 # map all data
 # represent data better with shape data 
-# link points through cells using geom_line() - subset
 # group points (size of point based on scale)
 
 
