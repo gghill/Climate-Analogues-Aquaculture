@@ -96,9 +96,9 @@ sal <- ggplot() +
     aes(map_id = region),
     color = "grey", fill = "lightgray", size = 0.01
   ) +
-  geom_point(data=sal1, x = long, y = lat, aes(color = "darkred")) +
-  geom_point(data=sal1, x = analogNovelty.x, y = analogNovelty.y, aes(color = "blue")) +
-  geom_point(data=sal1, x = analogDisappearance.x, y = analogDisappearance.y, aes(color = "darkgreen")) +
+  geom_point(data=sal1, aes(x = long, y = lat)) +
+  geom_point(data=sal1, aes(x = analogNovelty.x, y = analogNovelty.y)) +
+  geom_point(data=sal1, aes(x = analogDisappearance.x, y = analogDisappearance.y)) +
   xlim(-80, 80) + ylim(10, 80) +
   theme(legend.position = bottom)  + 
   scale_fill_manual(values = c('darkred', 'blue', 'darkgreen'), 
@@ -138,13 +138,59 @@ ggplot() +
                       labels = c("Current",  "Disappearing", "Novel"))
 ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset.png", width = 6, height = 4)
 
+
+# Adding lines to connect climates ----
+
+#have to change points to sf before you can denote by colour...
+
+df_c <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat)
+df_c <-st_as_sf(df_c %>% select(cell, c.long, c.lat), coords = c("c.long", "c.lat"), crs = 4326) %>%
+  rename(current = geometry) 
+
+df_n <- data.frame(cell = sal1$cell, n.long = sal1$analogNovelty.x, n.lat = sal1$analogNovelty.y)
+df_n <-st_as_sf(df_n %>% select(cell, n.long, n.lat), coords = c("n.long", "n.lat"), crs = 4326) %>%
+  rename(novel = geometry)
+                   
+df_d <- data.frame(cell = sal1$cell, d.long = sal1$analogDisappearance.x, 
+                   d.lat = sal1$analogDisappearance.y)
+df_d <-st_as_sf(df_d %>% select(cell, d.long, d.lat), coords = c("d.long", "d.lat"), crs = 4326) %>%
+  rename(disappearing = geometry)
+
+df_sf <- cbind(df_c, df_n, df_d)
+df_sf <- df_sf[ , -c(2, 3)]
+
+df_sf
+
+# 
+
+sal <- ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(map_id = region),
+    color = "grey", fill = "lightgray", size = 0.01
+  ) +
+  geom_point(data=sal1, aes(x = long, y = lat)) +
+  geom_point(data=sal1, aes(x = analogNovelty.x, y = analogNovelty.y)) +
+  geom_point(data=sal1, aes(x = analogDisappearance.x, y = analogDisappearance.y)) +
+  xlim(-80, 80) + ylim(10, 80) +
+  scale_colour_manual(values = wes_palette("GrandBudapest1", n = 3))
+
+
+
+
+sal
+
+# convert coords to sf for each?
+
+
+
 # Mapping Salmo salar full dataset ----
 
-full_dat <- data.frame(long = rbind(sal$))
+# full_dat <- data.frame(long = rbind(sal$))      #I'll come back to this
 
 # map all data
 # represent data better with shape data 
-# link points through cells using geom_line()
+# link points through cells using geom_line() - subset
 # group points (size of point based on scale)
 
 
