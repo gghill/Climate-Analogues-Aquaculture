@@ -76,7 +76,7 @@ names(sal1)[names(sal1) == 'y'] <- 'lat'
 
 
 
-# Salmo maps ----
+# Mapping Salmo salar subset ----
 
 countries <- world(path = "../Data/countries")
 
@@ -136,5 +136,17 @@ ggplot() +
   theme(plot.title = element_text(hjust = 0.5)) +
   scale_colour_manual(values = wes_palette("GrandBudapest1", n = 3), name = "Climate", 
                       labels = c("Current",  "Disappearing", "Novel"))
+ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset.png", width = 6, height = 4)
+
+# Mapping Salmo salar full dataset ----
+
+full_dat <- data.frame(long = rbind(sal$))
+
+# map all data
+# represent data better with shape data 
+# link points through cells using geom_line()
+# group points (size of point based on scale)
+
+
 
 
