@@ -65,7 +65,7 @@ names(sal1)[names(sal1) == 'y'] <- 'lat'
 
 
 
-# Mapping Salmo salar subset ----
+# Mapping Salmo salar subset SSP585 ----
 
 countries <- world(path = "../Data/countries")
 
@@ -105,7 +105,7 @@ ggplot() +
   theme(plot.title = element_text(hjust = 0.5)) +
   scale_colour_manual(values = wes_palette("GrandBudapest1", n = 3), name = "Climate", 
                       labels = c("Current",  "Disappearing", "Novel"))
-ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset.png", width = 6, height = 4)
+ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset585.png", width = 6, height = 4)
 
 
 # Adding lines to connect climates ----
@@ -136,7 +136,64 @@ ggplot() +
   scale_colour_brewer(palette = "Dark2", name = "Climate", 
                       labels = c("Current",  "Disappearing", "Novel")) 
 
-ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset_lines.png", width = 6, height = 4)
+ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset_lines585.png", width = 6, height = 4)
+
+# Mapping Salmo salar subset SSP119 ----
+
+load("../Results/climateDissimilarity/ssp119/Salmo salar/climateDissimilarity.RData")
+dat119 <- dataStructureResult
+dat119 <- dat119[1:100,]
+
+names(dat119)[names(dat119) == 'x'] <- 'long'
+names(dat119)[names(dat119) == 'y'] <- 'lat'
+
+df119 <- data.frame(cell = dat119$cell, c.long = dat119$long, c.lat = dat119$lat, 
+                    n.long = dat119$analogNovelty.x, n.lat = dat119$analogNovelty.y, 
+                    d.long = dat119$analogDisappearance.x, d.lat = dat119$analogDisappearance.y)
+
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(map_id = region),
+    color = "grey", fill = "lightgray", size = 0.01
+  ) + theme_bw()  +
+  geom_point(data=df119, aes(x = c.long, y = c.lat, color = "current")) +
+  geom_point(data=df119, aes(x = n.long, y = n.lat, color = "novel")) +
+  geom_point(data=df119, aes(x = d.long, y = d.lat, color = "disappearing")) + 
+  labs(title = "Salmo salar SSP1-1.9", x = "Longitude", y = "Latitude") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(-60, 60) + ylim(50, 80) +
+  scale_colour_brewer(palette = "Dark2", name = "Climate", 
+                      labels = c("Current",  "Disappearing", "Novel")) 
+
+ggsave(path = "../Results/climateDissimilarity/ssp119/Salmo salar/", filename ="S.salar_subset119.png", width = 6, height = 4)
+
+
+line_data <- data.frame(x = c(df119$c.long, df119$n.long), y = c(df119$c.lat, df119$n.lat), 
+                        cell = df119$cell)
+line_data2 <- data.frame(x = c(df119$c.long, df119$d.long), y = c(df119$c.lat, df119$d.lat), 
+                         cell = df119$cell)
+
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(map_id = region),
+    color = "grey", fill = "lightgray", size = 0.01
+  ) + theme_bw()  +
+  geom_path(data = line_data, aes(x = x, y = y, group = cell), color = "#B2ABD2", alpha = 0.4) +
+  geom_path(data = line_data2, aes(x = x, y = y, group = cell), color = "#F4A582", alpha = 0.4) +
+  geom_point(data=df119, aes(x = c.long, y = c.lat, color = "current")) +
+  geom_point(data=df119, aes(x = n.long, y = n.lat, color = "novel")) +
+  geom_point(data=df119, aes(x = d.long, y = d.lat, color = "disappearing")) + 
+  labs(title = "Salmo salar SSP1-1.9", x = "Longitude", y = "Latitude") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(-60, 60) + ylim(50, 80) +
+  scale_colour_brewer(palette = "Dark2", name = "Climate", 
+                      labels = c("Current",  "Disappearing", "Novel")) 
+
+ggsave(path = "../Results/climateDissimilarity/ssp119/Salmo salar/", filename ="S.salar_subset_lines119.png", width = 6, height = 4)
+
+
 
 # Mapping Salmo salar full dataset ----
 
