@@ -54,7 +54,7 @@ shape <- raster("../Data/MaskRes025.tif")
 ## -----------------------
 ## List available results
 scenario <- 'ssp585'
-resultsFolderMain <- paste0("../Data/climateDissimilarity/", scenario)
+resultsFolderMain <- paste0("../Results/climateDissimilarity/", scenario)
 resultsScope <- "sigmaNovelty" # sigmaNovelty sigmaDisappearance 
 resultsFolders <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=TRUE)
 resultsNames <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=FALSE)
@@ -82,7 +82,7 @@ for( i in 1:length(resultsFolders)) {
   ROIRaster <- rasterize(DissimilarityData[,c("x","y")], shape, field=DissimilarityData[,resultsScope], fun=mean) 
   writeRaster(ROIRaster, gsub(".RData",".tif",resultsFolders[i]), overwrite=TRUE)
   
-  # Crop to match only the extent od where the species is
+  # Crop to match only the extent of where the species is
   ROIPts <- xyFromCell(ROIRaster,Which(!is.na(ROIRaster), cells=TRUE)) 
   oceanBasins.i <- crop(oceanBasins, extent(c(min(ROIPts[,1])-1,max(ROIPts[,1])+1,min(ROIPts[,2])-1,max(ROIPts[,2])+1)))
   eez.i <- crop(eez, extent(c(min(ROIPts[,1])-1,max(ROIPts[,1])+1,min(ROIPts[,2])-1,max(ROIPts[,2])+1)))
@@ -118,10 +118,11 @@ for( i in 1:length(resultsFolders)) {
 
 write.csv(myResultsDF , file=paste0("../Results/",resultsScope,scenario,"_DF.csv"), row.names = FALSE)
 
-## -----------------------
-## -----------------------
+
+## EEZ level-----------------------
 
 # next steps: color EEZs by values, identify areas of interest (max and/or min sigma novelty)
+# myResultsDF aggregated to EEZ, only average and max available per EEZ
 myResultsDF <- read.csv(paste0("../Results/",resultsScope,scenario,"_DF.csv"))
 countries <- world(path = "../Data/countries")
 cols <- c('EEZ',	'seaBasn',	'country', 'Average',	'Max'
@@ -167,6 +168,7 @@ library(ggplot2)
 require(gridExtra)
 library(geodata)
 library(tidyverse)
+library(sf)
 
 # Salmo ----
 df <- st_as_sf(salmo_eezs)
@@ -334,9 +336,10 @@ grid.arrange(avg_salmo, avg_hot_salmo, avg_chanos, avg_hot_chanos, avg_trout, av
              top = 'Cultured finfish end of century Avg Sigma Dissimilarity by EEZ under two climate change scenarios')
 
 # full dissim data set ----
+# not aggregating immediately to EEZ level
 require('dggridR')
 hex_grid <- dgconstruct(spacing=200, metric=TRUE, resround='down')
-data_folder <- "../Data/climateDissimilarity"
+data_folder <- "../Results/climateDissimilarity"
 
 # Salmo full dataset ----
 scenario <- 'ssp119'
