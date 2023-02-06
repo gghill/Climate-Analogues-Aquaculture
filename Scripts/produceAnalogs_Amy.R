@@ -56,12 +56,12 @@ shape <- raster("../Data/MaskRes025.tif")
 # load in data 
 
 load("../Results/climateDissimilarity/ssp585/Salmo salar/climateDissimilarity.RData")
-s <- dataStructureResult
-sal <- s[1:1000,]
+sal <- dataStructureResult
 sal1<- sal[1:100,]
+sal1<- sal[1:1000,]
 
-names(sal1)[names(sal1) == 'x'] <- 'long'
-names(sal1)[names(sal1) == 'y'] <- 'lat'
+names(sal)[names(sal1) == 'x'] <- 'long'
+names(sal)[names(sal1) == 'y'] <- 'lat'
 
 
 
@@ -87,7 +87,6 @@ dissappearing$climate <- "dissappearing"
 dat <- rbind(current, novel, dissappearing) %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-install.packages("wesanderson")
 library(wesanderson)
 names(wes_palettes)
 
@@ -103,8 +102,9 @@ ggplot() +
   geom_sf(data = dat, aes(color = climate)) +
   labs(title = "Salmo salar SSP5-8.5", x = "Longitude", y = "Latitude") +
   theme(plot.title = element_text(hjust = 0.5)) +
-  scale_colour_manual(values = wes_palette("GrandBudapest1", n = 3), name = "Climate", 
-                      labels = c("Current",  "Disappearing", "Novel"))
+  scale_colour_brewer(palette = "Dark2", name = "Climate", 
+                      labels = c("Current",  "Disappearing", "Novel")) 
+
 ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset585.png", width = 6, height = 4)
 
 
@@ -201,6 +201,21 @@ full_dat <- data.frame(cell = sal$cell, c.long = sal$long, c.lat = sal$lat,
                        n.long = sal$analogNovelty.x, 
                        n.lat = sal$analogNovelty.y, d.long = sal$analogDisappearance.x, 
                        d.lat = sal$analogDisappearance.y)
+
+ggplot() +
+  geom_map(
+    data = world, map = world,
+    aes(map_id = region),
+    color = "grey", fill = "lightgray", size = 0.01
+  ) + theme_bw()  +
+  geom_point(data=full_dat, aes(x = c.long, y = c.lat, color = "current")) +
+  geom_point(data=full_dat, aes(x = n.long, y = n.lat, color = "novel")) +
+  geom_point(data=full_dat, aes(x = d.long, y = d.lat, color = "disappearing")) + 
+  labs(title = "Salmo salar SSP5-8.5", x = "Longitude", y = "Latitude") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  xlim(-60, 60) + ylim(10, 80) +
+  scale_colour_brewer(palette = "Dark2", name = "Climate", 
+                      labels = c("Current",  "Disappearing", "Novel")) 
 
 
 ### NEXT STEPS ####
