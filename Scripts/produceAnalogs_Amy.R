@@ -7,6 +7,7 @@
 ## ---------------------------------------------------------------------
 
 # First draft for mapping novel and disappearing climates AM, working from modified climate dissimilarity script
+# First loop using test data set for aggregating dissimilarity
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
@@ -18,14 +19,13 @@ gc(reset=TRUE)
 library(raster)
 library(sf)
 library(ggplot2)
-theme_set(theme_bw())
 require(gridExtra)
 library(geodata)
 library(tidyverse)
 library(ggplot2)
 library(cowplot)
 
-## -----------------
+## SETUP -----------------
 
 oceanBasins <- shapefile("../Data/spatialInformation/goas_v01.shp")
 eez <- shapefile("../Data/spatialInformation/eez.shp")
@@ -109,12 +109,13 @@ resultsNames <- testNames
 ## BIG LOOP -----------------------
 ## Make a data.frame ready to be populated by species / eez / ocean
 myResultsDF <- data.frame()
+# determine factors of interest for plotting
+# in this case p2 and p4 are the percent above 2 sigma and 4 sigma within that EEZ respectively
 factors <- c('p2', 'p4', 'Average', 'Max')
 # test run 060223:
-# 1 hour run time
-# csvs look good, plots named wrong (fixed)
-# plot pngs blank, need to double check that code
-# still needs to be fixed, consistent at 1 hour run
+# 1 hour run time for 4 species
+# CSVs look good, plots named wrong (fixed)
+# needs to be optimized
 Sys.time()
 for( i in 1:length(resultsFolders)) {
   active_species <- resultsNames[i]
@@ -140,6 +141,7 @@ for( i in 1:length(resultsFolders)) {
   
   # iterate between all oceans and all eez inside
   
+  # Not using oceanBasins for now, large files, difficulty iterating over
   # for( j in 1:nrow(oceanBasins.i) ) {
   #   
   #   ROIRaster.j <- crop(ROIRaster,oceanBasins.i[j,])
@@ -196,40 +198,11 @@ save_grid <- plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(.025,1))
 
 # write to file
 ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.jpeg'), save_grid, device = 'jpeg')
-# png(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.png'), width = 1000, height = 550, units = 'px')
-# plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(.025,1))
-# dev.off()
 }
 Sys.time()
 
-  # testing first with one species, non looped
 
 
-
-# salmo_DF <- myResultsDF
-# salmo_eezs <- eez[eez$EEZ %in% unique(salmo_DF$EEZ),]
-# salmo_eezs@data <- cbind(salmo_eezs@data, salmo_DF[,-2])
-# head(salmo_eezs@data)
-# salmo_eezs_vis <- st_as_sf(salmo_eezs)
-# names(salmo_eezs_vis)
-
-
-
-
-
-  
-# test plot
-# salmo_dissim <- ggplot() +
-#   geom_map(
-#     data = world, map = world,
-#     aes(map_id = region),
-#     color = "grey", fill = "lightgray", linewidth = 0.01
-#   ) +
-#   geom_sf(data=salmo_eezs_vis, aes(fill=p2)) +
-#   # labs(title = 'Average sigma dissimilarity by EEZ (2100, SSP 119') +
-#   labs(title = 'Atlantic Salmon (Salmo salar) SSP 585') +
-#   scale_fill_gradient(limits = c(0, 1), low = '#5BA300', high = '#B51963')
-# salmo_dissim
 
 # Begin analog mapping ----
 
@@ -263,7 +236,6 @@ dissappearing$climate <- "dissappearing"
 dat <- rbind(current, novel, dissappearing) %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-install.packages("wesanderson")
 library(wesanderson)
 names(wes_palettes)
 
