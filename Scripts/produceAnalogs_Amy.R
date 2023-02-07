@@ -86,6 +86,7 @@ plot_data_factor = function (column) {
 
 ## List available results
 scenario <- 'ssp585'
+# can add outer loop here to iterate over multiple scenarios if needed
 # species <- 'Salmo salar'
 resultsFolderMain <- paste0("../Results/climateDissimilarity/", scenario)
 resultsScope <- "sigmaNovelty" # sigmaNovelty sigmaDisappearance 
@@ -113,6 +114,7 @@ factors <- c('p2', 'p4', 'Average', 'Max')
 # 1 hour run time
 # csvs look good, plots named wrong (fixed)
 # plot pngs blank, need to double check that code
+# still needs to be fixed, consistent at 1 hour run
 Sys.time()
 for( i in 1:length(resultsFolders)) {
   active_species <- resultsNames[i]
@@ -189,10 +191,14 @@ title <- ggdraw() +
     plot.margin = margin(0, 0, 0, 7)
   )
 
+grid <- plot_grid(plotlist = myplots)
+save_grid <- plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(.025,1))
+
 # write to file
-png(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.png'), width = 1000, height = 550, units = 'px')
-plot_grid(title,plot_grid(plotlist = myplots), ncol = 1, axis='b',rel_heights = c(.025,1))
-dev.off()
+ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.jpeg'), save_grid, device = 'jpeg')
+# png(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.png'), width = 1000, height = 550, units = 'px')
+# plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(.025,1))
+# dev.off()
 }
 Sys.time()
 
