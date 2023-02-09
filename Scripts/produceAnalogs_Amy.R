@@ -144,6 +144,9 @@ factors <- c('p2', 'p4', 'Average', 'Max')
 # CSVs look good, plots named wrong (fixed)
 # needs to be optimized
 
+# test run 090223:
+# hex = TRUE
+
 Sys.time()
 for( i in 1:length(resultsFolders)) {
   active_species <- resultsNames[i]
@@ -208,6 +211,8 @@ active_eezs_vis <- st_as_sf(active_eezs)
 write.csv(active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_DF.csv"), row.names = FALSE)
 
 hex_active_DF <- DissimilarityData[,c('x','y','sigmaNovelty')]
+# very hacky solution to wrap around plotting issue
+hex_active_DF <- hex_active_DF[(hex_active_DF$x<177) & (hex_active_DF$x>-177),]
 # add EEZ labels by row (not done yet)
 # assign pixels to cells and summarize dissimilarity within
 hex_active_DF$cell <- dgGEO_to_SEQNUM(hex_grid, hex_active_DF$x, hex_active_DF$y)$seqnum
@@ -275,18 +280,19 @@ save_grid <- plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(0.03,1))
 
 # write to file
 dpi=300
-ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
+if (hex==TRUE) {
+  ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_hex_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
+  
+} else {
+  ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
+}
 }
 Sys.time()
-
-grid <- plot_grid(plotlist = myplots, rel_widths = c(0.5, 0.5), rel_heights = c(0.8, 0.8))
-grid
 
 
 # Begin analog mapping ----
 
 sal <- s[1:1000,]
->>>>>>> a03cb2a832c6df2eb869f12d2b5d9b27c7657826
 sal1<- sal[1:100,]
 sal1<- sal[1:1000,]
 
