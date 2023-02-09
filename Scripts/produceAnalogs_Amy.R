@@ -58,7 +58,6 @@ world <- map_data("world")
 ## -----------------------
 # load in data 
 
-<<<<<<< HEAD
 load("../Results/climateDissimilarity/ssp585/Salmo salar/climateDissimilarity.RData")
 sal <- dataStructureResult
   
@@ -90,7 +89,7 @@ plot_data_factor = function (column) {
 
 
 ## List available results
-scenario <- 'ssp585'
+scenario <- 'ssp119'
 # can add outer loop here to iterate over multiple scenarios if needed
 
 # species <- 'Salmo salar'
@@ -214,14 +213,10 @@ ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ
 }
 Sys.time()
 
-grid <- plot_grid(plotlist = myplots, rel_widths = c(0.5, 0.5), rel_heights = c(0.8, 0.8))
-grid
-
 
 # Begin analog mapping ----
 
 sal <- s[1:1000,]
->>>>>>> a03cb2a832c6df2eb869f12d2b5d9b27c7657826
 sal1<- sal[1:100,]
 sal1<- sal[1:1000,]
 
