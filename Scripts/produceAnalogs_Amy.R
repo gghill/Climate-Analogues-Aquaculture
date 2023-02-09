@@ -67,13 +67,27 @@ sal <- dataStructureResult
 # s <- dataStructureResult
 
 # plot function for summary plots
-plot_data_factor = function (column) {
+plot_data_factor = function (column, hex=FALSE) {
   if (startsWith(column,'p')) {
     scale_max = 1
   } else {
     scale_max = 8.3
   }
-  ggplot(active_eezs_vis) +
+  if (hex==TRUE) {
+    ggplot(hex_active_plot) + 
+      geom_map(
+        data = world, map = world,
+        aes(map_id = region),
+        color = "grey", fill = "lightgray", size = 0.01
+      ) +
+      geom_sf(data = active_eezs_vis, aes(fill=NULL)) +
+      geom_sf(aes(fill=hex_active_plot[[column]]), alpha=0.8, color='white')    +
+      labs(fill = column) + xlab("Longitude") +
+      scale_x_continuous(labels = c("-120", "-60", "0", "60", "120")) +
+      scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963', na.value = 'white') +
+      theme(plot.margin=unit(c(0, 0, 0, 0), "pt"))
+  } else {
+      ggplot(active_eezs_vis) +
     geom_map(
       data = world, map = world,
       aes(map_id = region),
@@ -84,6 +98,7 @@ plot_data_factor = function (column) {
     scale_x_continuous(labels = c("-120", "-60", "0", "60", "120")) +
     scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963', na.value = 'white') +
     theme(plot.margin=unit(c(0, 0, 0, 0), "pt"))
+  }
 }
 
 
@@ -92,6 +107,7 @@ plot_data_factor = function (column) {
 
 ## List available results
 scenario <- 'ssp585'
+hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
 # species <- 'Salmo salar'
@@ -192,32 +208,35 @@ active_eezs_vis <- st_as_sf(active_eezs)
 write.csv(active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_DF.csv"), row.names = FALSE)
 
 hex_active_DF <- DissimilarityData[,c('x','y','sigmaNovelty')]
-# add EEZ labels by row
+# add EEZ labels by row (not done yet)
+# assign pixels to cells and summarize dissimilarity within
 hex_active_DF$cell <- dgGEO_to_SEQNUM(hex_grid, hex_active_DF$x, hex_active_DF$y)$seqnum
 hex_active_cells <- dgSEQNUM_to_GEO(hex_grid,hex_active_DF$cell)
-hex_active_dissim <- hex_active_DF %>% group_by(cell) %>% summarise(Dissim=mean(sigmaNovelty))
+hex_test <- hex_active_DF %>% group_by(cell)
+hex_active_dissim <- hex_active_DF %>% group_by(cell) %>% summarise(Average=mean(sigmaNovelty),
+                                                                    Max=max(sigmaNovelty),
+                                                                    p2=sum(sigmaNovelty > 2)/sum(sigmaNovelty),
+                                                                    p4=sum(sigmaNovelty > 4)/sum(sigmaNovelty))
 hex_active_plot <- dgcellstogrid(hex_grid, hex_active_dissim$cell)
 names(hex_active_plot) <- c('cell', 'geometry') # labeling with highest overlap EEZ would be nice here
 hex_active_plot <- merge(hex_active_plot, hex_active_dissim, by.x='cell', by.y='cell')
-hex_active_plot <- as.data.frame(hex_active_plot)
 # Hex plotting ----
-scale_max <- 8.3
-hex_plot <- ggplot(st_as_sf(hex_active_plot)) + 
-  geom_map(
-    data = world, map = world,
-    aes(map_id = region),
-    color = "grey", fill = "lightgray", size = 0.01
-  ) +
-  geom_sf(data = active_eezs_vis, aes(fill=NULL)) +
-  geom_sf(aes(fill=Dissim), alpha=0.8, color='white')    +
-  #geom_path   (data=grid,      aes(x=long, y=lat, group=group), alpha=0.4, color="white") +
-  # xlim(-100,100) +
-  # ylim(30,80) +
-  scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963') +
-  labs(title = paste(active_species,scenario),
-       fill = 'Mean')
-
-hex_plot
+# scale_max <- 1
+# hex_plot <- ggplot(st_as_sf(hex_active_plot)) + 
+#   geom_map(
+#     data = world, map = world,
+#     aes(map_id = region),
+#     color = "grey", fill = "lightgray", size = 0.01
+#   ) +
+#   geom_sf(data = active_eezs_vis, aes(fill=NULL)) +
+#   geom_sf(aes(fill=p2), alpha=0.8, color='white')    +
+#   #geom_path   (data=grid,      aes(x=long, y=lat, group=group), alpha=0.4, color="white") +
+#   # xlim(-100,100) +
+#   # ylim(30,80) +
+#   scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963') +
+#   labs(title = paste(active_species,scenario))
+# 
+# hex_plot
 
 # sanity check plot based off pixels alone
 # pixel_plt <- ggplot() +
@@ -237,7 +256,7 @@ hex_plot
 #        fill = 'Sigma Dissim.')
 # pixel_plt
 
-myplots <- lapply(factors, plot_data_factor)
+myplots <- lapply(factors, plot_data_factor, hex=hex)
 title <- ggdraw() + 
   draw_label(
     paste(active_species, scenario),
