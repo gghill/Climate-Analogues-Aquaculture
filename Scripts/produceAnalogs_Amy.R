@@ -7,6 +7,7 @@
 ## ---------------------------------------------------------------------
 
 # First draft for mapping novel and disappearing climates AM, working from modified climate dissimilarity script
+# First loop using test data set for aggregating dissimilarity
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
@@ -18,16 +19,18 @@ gc(reset=TRUE)
 library(raster)
 library(sf)
 library(ggplot2)
-theme_set(theme_bw())
-require(gridExtra)
+library(gridExtra)
 library(geodata)
 library(tidyverse)
+library(ggplot2)
+library(cowplot)
 
-## -----------------
+## SETUP -----------------
 
 oceanBasins <- shapefile("../Data/spatialInformation/goas_v01.shp")
 eez <- shapefile("../Data/spatialInformation/eez.shp")
 shape <- raster("../Data/MaskRes025.tif")
+world <- map_data("world")
 
 # Simplify and to make valid polygons
 # sf::sf_use_s2(FALSE)
@@ -55,8 +58,170 @@ shape <- raster("../Data/MaskRes025.tif")
 ## -----------------------
 # load in data 
 
+<<<<<<< HEAD
 load("../Results/climateDissimilarity/ssp585/Salmo salar/climateDissimilarity.RData")
 sal <- dataStructureResult
+  
+# load("../Results/climateDissimilarity/ssp585/Salmo salar/climateDissimilarity.RData")
+# s <- dataStructureResult
+
+# plot function for summary plots
+plot_data_factor = function (column) {
+  if (startsWith(column,'p')) {
+    scale_max = 1
+  } else {
+    scale_max = 8.3
+  }
+  ggplot(active_eezs_vis) +
+    geom_map(
+      data = world, map = world,
+      aes(map_id = region),
+      color = "grey", fill = "lightgray", linewidth = 0.01
+    ) +
+    geom_sf(aes(fill=active_eezs_vis[[column]])) +
+    labs(fill = column) + xlab("Longitude") +
+    scale_x_continuous(labels = c("-120", "-60", "0", "60", "120")) +
+    scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963', na.value = 'white') +
+    theme(plot.margin=unit(c(0, 0, 0, 0), "pt"))
+}
+
+
+# Begin dissimilarity visualization and aggregation ----
+
+
+## List available results
+scenario <- 'ssp585'
+# can add outer loop here to iterate over multiple scenarios if needed
+
+# species <- 'Salmo salar'
+resultsFolderMain <- paste0("../Results/climateDissimilarity/", scenario)
+resultsScope <- "sigmaNovelty" # sigmaNovelty sigmaDisappearance 
+resultsFolders <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=TRUE)
+resultsNames <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=FALSE)
+resultsNames <- gsub("/climateDissimilarity.RData","",resultsNames)
+
+resultsFolders
+resultsNames
+
+# test dataset
+test_main <- paste0(resultsFolderMain,'/','test_species')
+test_folders <- list.files(test_main, recursive=TRUE, pattern=".RData", full.names=TRUE)
+testNames <- list.files(test_main, recursive=TRUE, pattern=".RData", full.names=FALSE)
+testNames <- gsub("/climateDissimilarity.RData","",testNames)
+
+testNames
+resultsFolders <- test_folders
+resultsNames <- testNames
+
+## BIG LOOP -----------------------
+
+## Make a data.frame ready to be populated by species / eez / ocean
+myResultsDF <- data.frame()
+
+# determine factors of interest for plotting
+# in this case p2 and p4 are the percent above 2 sigma and 4 sigma within that EEZ respectively
+factors <- c('p2', 'p4', 'Average', 'Max')
+
+# test run 060223:
+# 1 hour run time for 4 species
+# CSVs look good, plots named wrong (fixed)
+# needs to be optimized
+
+Sys.time()
+for( i in 1:length(resultsFolders)) {
+  active_species <- resultsNames[i]
+  #cat("\014")
+  cat("\n")
+  cat("# ---------------------------------\n")
+  cat(i,"out of",length(resultsFolders),"\n")
+  cat("# ---------------------------------\n")
+  cat("\n")
+  
+  DissimilarityData <- load(resultsFolders[i])
+  #DissimilarityData <- load(paste0(resultsFolderMain,'/',species,'/climateDissimilarity.Rdata'))
+  DissimilarityData <- dataStructureResult
+  # head(DissimilarityData)
+  
+  # creates a raster where pixel value = no. of points in each cell
+  ROIRaster <- rasterize(DissimilarityData[,c("x","y")], shape, field=DissimilarityData[,resultsScope], fun=mean) 
+  # writeRaster(ROIRaster, gsub(".RData",".tif",resultsFolders[i]), overwrite=TRUE)
+  
+  # Crop to match only the extent of where the species is
+  ROIPts <- xyFromCell(ROIRaster,Which(!is.na(ROIRaster), cells=TRUE)) 
+  # oceanBasins.i <- crop(oceanBasins, extent(c(min(ROIPts[,1])-1,max(ROIPts[,1])+1,min(ROIPts[,2])-1,max(ROIPts[,2])+1)))
+  eez.i <- crop(eez, extent(c(min(ROIPts[,1])-1,max(ROIPts[,1])+1,min(ROIPts[,2])-1,max(ROIPts[,2])+1)))
+  
+  # iterate between all oceans and all eez inside
+  
+  # Not using oceanBasins for now, large files, difficulty iterating over
+  # for( j in 1:nrow(oceanBasins.i) ) {
+  #   
+  #   ROIRaster.j <- crop(ROIRaster,oceanBasins.i[j,])
+  #   ROIRaster.j <- mask(ROIRaster.j,oceanBasins.i[j,])
+  
+  for( k in 1:nrow(eez.i) ) {
+    
+    ROIRaster.k <- crop(ROIRaster,eez.i[k,])
+    ROIRaster.k <- crop(ROIRaster.k,eez.i[k,])
+    
+    valuesInsideOceanInsideEEZ <- getValues(ROIRaster.k)
+    valuesInsideOceanInsideEEZ <- valuesInsideOceanInsideEEZ[!is.na(valuesInsideOceanInsideEEZ)]
+    
+    if( length(valuesInsideOceanInsideEEZ) > 0) {
+      
+      myResultsDF <- rbind(myResultsDF,
+                           data.frame(Species=resultsNames[i],
+                                      #Ocean=oceanBasins.i[j,]$name[1],
+                                      EEZ=eez.i[k,]$EEZ[1],
+                                      p2=(length(valuesInsideOceanInsideEEZ[valuesInsideOceanInsideEEZ>2])/length(valuesInsideOceanInsideEEZ)),
+                                      p4=(length(valuesInsideOceanInsideEEZ[valuesInsideOceanInsideEEZ>4])/length(valuesInsideOceanInsideEEZ)),
+                                      Average=mean(valuesInsideOceanInsideEEZ),
+                                      Max=max(valuesInsideOceanInsideEEZ)
+                           ))
+    }
+  }
+  #}
+  
+# construct dataframe and sf object of active species
+active_DF <- myResultsDF[myResultsDF$Species == active_species,]
+active_eezs <- eez[eez$EEZ %in% unique(active_DF$EEZ),]
+active_eezs@data <- cbind(active_eezs@data, active_DF[,-2])
+active_eezs_vis <- st_as_sf(active_eezs)
+# construct name and write df to file
+write.csv(active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_DF.csv"), row.names = FALSE)
+
+
+myplots <- lapply(factors, plot_data_factor)
+title <- ggdraw() + 
+  draw_label(
+    paste(active_species, scenario),
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(
+    # add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(15, 0, 10, 7)
+  )
+
+grid <- plot_grid(plotlist = myplots)
+save_grid <- plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(0.03,1))
+
+# write to file
+dpi=300
+ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
+}
+Sys.time()
+
+grid <- plot_grid(plotlist = myplots, rel_widths = c(0.5, 0.5), rel_heights = c(0.8, 0.8))
+grid
+
+
+# Begin analog mapping ----
+
+sal <- s[1:1000,]
+>>>>>>> a03cb2a832c6df2eb869f12d2b5d9b27c7657826
 sal1<- sal[1:100,]
 sal1<- sal[1:1000,]
 
@@ -87,10 +252,6 @@ dissappearing$climate <- "dissappearing"
 dat <- rbind(current, novel, dissappearing) %>%
   st_as_sf(coords = c("long", "lat"), crs = 4326)
 
-library(wesanderson)
-names(wes_palettes)
-
-world <- map_data("world")
 
 ggplot() + 
   geom_map(
