@@ -106,7 +106,7 @@ plot_data_factor = function (column, hex=FALSE) {
 
 
 ## List available results
-scenario <- 'ssp585'
+scenario <- 'ssp119'
 hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
@@ -146,6 +146,8 @@ factors <- c('p2', 'p4', 'Average', 'Max')
 
 # test run 090223:
 # hex = TRUE
+# scenario not updated properly in folder path
+# plots being labeled correctly, but dataframe and plot does not reflect the different scenario
 
 Sys.time()
 for( i in 1:length(resultsFolders)) {
