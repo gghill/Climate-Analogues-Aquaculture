@@ -108,6 +108,7 @@ test_folders <- list.files(test_main, recursive=TRUE, pattern=".RData", full.nam
 testNames <- list.files(test_main, recursive=TRUE, pattern=".RData", full.names=FALSE)
 testNames <- gsub("/climateDissimilarity.RData","",testNames)
 
+
 testNames
 resultsFolders <- test_folders
 resultsNames <- testNames
