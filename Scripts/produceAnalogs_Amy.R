@@ -18,6 +18,7 @@ gc(reset=TRUE)
 
 library(raster)
 library(sf)
+library(sp)
 library(ggplot2)
 library(gridExtra)
 library(geodata)
@@ -106,7 +107,7 @@ plot_data_factor = function (column, hex=FALSE) {
 
 
 ## List available results
-scenario <- 'ssp119'
+scenario <- 'ssp585'
 hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
@@ -215,7 +216,14 @@ write.csv(active_DF, file=paste0(test_main,'/',active_species,'/',active_species
 hex_active_DF <- DissimilarityData[,c('x','y','sigmaNovelty')]
 # very hacky solution to wrap around plotting issue
 hex_active_DF <- hex_active_DF[(hex_active_DF$x<177) & (hex_active_DF$x>-177),]
-# add EEZ labels by row (not done yet)
+# add EEZ labels by row 
+hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
+proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
+eez_index <- over(hex_active_DF_sp[, c('x', 'y')], eez)
+hex_active_DF <- cbind(hex_active_DF, eez_index[2])
+colnames(hex_active_DF)[ncol(hex_active_DF)] <- "EEZ" 
+write.csv(hex_active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_hex_DF.csv"), row.names = FALSE)
+
 # assign pixels to cells and summarize dissimilarity within
 hex_active_DF$cell <- dgGEO_to_SEQNUM(hex_grid, hex_active_DF$x, hex_active_DF$y)$seqnum
 hex_active_cells <- dgSEQNUM_to_GEO(hex_grid,hex_active_DF$cell)
@@ -227,6 +235,15 @@ hex_active_dissim <- hex_active_DF %>% group_by(cell) %>% summarise(Average=mean
 hex_active_plot <- dgcellstogrid(hex_grid, hex_active_dissim$cell)
 names(hex_active_plot) <- c('cell', 'geometry') # labeling with highest overlap EEZ would be nice here
 hex_active_plot <- merge(hex_active_plot, hex_active_dissim, by.x='cell', by.y='cell')
+
+# construct dataframe of hex cells for active species
+active_DF <- myResultsDF[myResultsDF$Species == active_species,]
+active_eezs <- eez[eez$EEZ %in% unique(active_DF$EEZ),]
+active_eezs@data <- cbind(active_eezs@data, active_DF[,-2])
+active_eezs_vis <- st_as_sf(active_eezs)
+# construct name and write df to file
+write.csv(active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_DF.csv"), row.names = FALSE)
+
 # Hex plotting ----
 # scale_max <- 1
 # hex_plot <- ggplot(st_as_sf(hex_active_plot)) + 
