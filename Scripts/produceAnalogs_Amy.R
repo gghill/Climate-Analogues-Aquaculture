@@ -107,7 +107,7 @@ plot_data_factor = function (column, hex=FALSE) {
 
 
 ## List available results
-scenario <- 'ssp585'
+scenario <- 'ssp119'
 hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
@@ -216,13 +216,6 @@ write.csv(active_DF, file=paste0(test_main,'/',active_species,'/',active_species
 hex_active_DF <- DissimilarityData[,c('x','y','sigmaNovelty')]
 # very hacky solution to wrap around plotting issue
 hex_active_DF <- hex_active_DF[(hex_active_DF$x<177) & (hex_active_DF$x>-177),]
-# add EEZ labels by row 
-hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
-proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
-eez_index <- over(hex_active_DF_sp[, c('x', 'y')], eez)
-hex_active_DF <- cbind(hex_active_DF, eez_index[2])
-colnames(hex_active_DF)[ncol(hex_active_DF)] <- "EEZ" 
-
 
 # assign pixels to cells and summarize dissimilarity within
 hex_active_DF$cell <- dgGEO_to_SEQNUM(hex_grid, hex_active_DF$x, hex_active_DF$y)$seqnum
@@ -236,42 +229,15 @@ hex_active_plot <- dgcellstogrid(hex_grid, hex_active_dissim$cell)
 names(hex_active_plot) <- c('cell', 'geometry') # labeling with highest overlap EEZ would be nice here
 hex_active_plot <- merge(hex_active_plot, hex_active_dissim, by.x='cell', by.y='cell')
 
-write.csv(hex_active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_hex_DF.csv"), row.names = FALSE)
-# Hex plotting ----
-# scale_max <- 1
-# hex_plot <- ggplot(st_as_sf(hex_active_plot)) + 
-#   geom_map(
-#     data = world, map = world,
-#     aes(map_id = region),
-#     color = "grey", fill = "lightgray", size = 0.01
-#   ) +
-#   geom_sf(data = active_eezs_vis, aes(fill=NULL)) +
-#   geom_sf(aes(fill=p2), alpha=0.8, color='white')    +
-#   #geom_path   (data=grid,      aes(x=long, y=lat, group=group), alpha=0.4, color="white") +
-#   # xlim(-100,100) +
-#   # ylim(30,80) +
-#   scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963') +
-#   labs(title = paste(active_species,scenario))
-# 
-# hex_plot
+# add EEZ labels by row 
+hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
+proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
+eez_index <- over(hex_active_DF_sp[, c('x', 'y')], eez)
+hex_active_DF <- cbind(hex_active_DF, eez_index[2])
+colnames(hex_active_DF)[ncol(hex_active_DF)] <- "EEZ" 
 
-# sanity check plot based off pixels alone
-# pixel_plt <- ggplot() +
-#   geom_map(
-#     data = world, map = world,
-#     aes(map_id = region),
-#     color = "grey", fill = "lightgray", size = 0.01
-#   ) +
-#   geom_tile(data=hex_active_DF, aes(x=x,y=y,fill=sigmaNovelty)) +
-#   xlim(-180,180) +
-#   ylim(30,80) +
-#   scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963') +
-#   theme(axis.title.x=element_blank(), #remove x axis labels
-#         axis.title.y=element_blank(),  #remove y axis labels
-#   ) +
-#   labs(title = paste0(active_species, scenario),
-#        fill = 'Sigma Dissim.')
-# pixel_plt
+write.csv(hex_active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_hex_DF.csv"), row.names = FALSE)
+
 
 myplots <- lapply(factors, plot_data_factor, hex=hex)
 title <- ggdraw() + 
@@ -301,6 +267,7 @@ if (hex==TRUE) {
 }
 Sys.time()
 
+# ~2 hours per test run (7 species) with hex data
 
 # Begin analog mapping ----
 
@@ -463,9 +430,6 @@ ggplot() +
 
 
 ### NEXT STEPS ####
-# map all data - issue creating full_dat with even 1000 rows... 
-# represent data better with shape data ?
-# group points (size of point based on scale) ?
 
 
 # change points to sf before you can denote by colour (later edit: this wasn't used but leaving in for future use)
