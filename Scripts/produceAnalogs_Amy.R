@@ -26,6 +26,7 @@ library(tidyverse)
 library(ggplot2)
 library(cowplot)
 require('dggridR')
+library(tidyr)
 
 ## SETUP -----------------
 
@@ -107,7 +108,7 @@ plot_data_factor = function (column, hex=FALSE) {
 
 
 ## List available results
-scenario <- 'ssp119'
+scenario <- 'ssp585'
 hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
@@ -271,17 +272,25 @@ Sys.time()
 
 # EEZ Aggregation ----
 
-allspDF <- myResultsDF %>% relocate(EEZ) %>%
-  arrange(allspDF, EEZ)
-
+# Dissim metrics per EEZ averaged by all species in that EEZ
 eezDF <- myResultsDF %>% group_by(EEZ) %>% 
-  summarise(Species = n_distinct(Species), p0 = sum(Average > 0), 
-            p2 = sum(Average > 2), p4 = sum(Average > 4),
+  summarise(Species = n_distinct(Species), p2 = sum(Average > 2)/sum(Average),
+            p4 = sum(Average > 4)/sum(Average),
             Average = mean(Average), Max = mean(Max), .groups = "drop")
 
-eezDF
+# Dissim metrics per EEZ by species
+eez_sp_mean <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
+  pivot_wider(names_from = Species, values_from = Average) %>% select(-p2, -p4, -Max) %>%
+  summarise(across(everything(), ~first(na.omit(.))))
 
+eez_sp_p2 <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
+  pivot_wider(names_from = Species, values_from = p2) %>% select(-Average, -p4, -Max) %>%
+  summarise(across(everything(), ~first(na.omit(.))))
 
+eez_sp_p4 <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
+  pivot_wider(names_from = Species, values_from = p4) %>% select(-Average, -p2, -Max) %>%
+  summarise(across(everything(), ~first(na.omit(.))))
+              
 # Climate Analog visualisation ----
 
 sal <- s[1:1000,]
@@ -359,7 +368,6 @@ ggplot() +
                       labels = c("Current",  "Disappearing", "Novel")) 
 
 ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset_lines585.png", width = 6, height = 4)
-Yeah 
 
 # Mapping Salmo salar full dataset
 
