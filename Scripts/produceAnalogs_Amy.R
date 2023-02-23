@@ -25,6 +25,7 @@ library(geodata)
 library(tidyverse)
 library(ggplot2)
 library(cowplot)
+library(rgeos)
 require('dggridR')
 
 ## SETUP -----------------
@@ -33,7 +34,8 @@ require('dggridR')
 eez <- shapefile("../Data/spatialInformation/eez.shp")
 shape <- raster("../Data/MaskRes025.tif")
 world <- map_data("world")
-hex_grid <- dgconstruct(spacing=200, metric=TRUE, resround='down')
+# hex_grid <- dgconstruct(spacing=200, metric=TRUE, resround='down')
+hex_grid <- dgconstruct(res = 6)
 
 # Simplify and to make valid polygons
 # sf::sf_use_s2(FALSE)
@@ -82,7 +84,7 @@ plot_data_factor = function (column, hex=FALSE) {
         color = "grey", fill = "lightgray", size = 0.01
       ) +
       geom_sf(data = active_eezs_vis, aes(fill=NULL)) +
-      geom_sf(aes(fill=hex_active_plot[[column]]), alpha=0.8, color='white')    +
+      geom_sf(aes(fill=hex_active_plot[[column]]), alpha=0.8, linewidth = 0.01, color='white')    +
       labs(fill = column) + xlab("Longitude") +
       scale_x_continuous(labels = c("-120", "-60", "0", "60", "120")) +
       scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963', na.value = 'white') +
@@ -107,11 +109,12 @@ plot_data_factor = function (column, hex=FALSE) {
 
 
 ## List available results
-scenario <- 'ssp119'
+scenario <- 'ssp585'
 hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
 # species <- 'Salmo salar'
+active_species <- 'Gadus morhua'
 resultsFolderMain <- paste0("../Results/climateDissimilarity/", scenario)
 resultsScope <- "sigmaNovelty" # sigmaNovelty sigmaDisappearance 
 resultsFolders <- list.files(resultsFolderMain, recursive=TRUE, pattern=".RData", full.names=TRUE)
@@ -205,7 +208,7 @@ for( i in 1:length(resultsFolders)) {
   }
   #}
   
-# construct dataframe and sf object of active species
+# # construct dataframe and sf object of active species
 active_DF <- myResultsDF[myResultsDF$Species == active_species,]
 active_eezs <- eez[eez$EEZ %in% unique(active_DF$EEZ),]
 active_eezs@data <- cbind(active_eezs@data, active_DF[,-2])
@@ -230,13 +233,13 @@ names(hex_active_plot) <- c('cell', 'geometry') # labeling with highest overlap 
 hex_active_plot <- merge(hex_active_plot, hex_active_dissim, by.x='cell', by.y='cell')
 
 # add EEZ labels by row 
-hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
-proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
-eez_index <- over(hex_active_DF_sp[, c('x', 'y')], eez)
-hex_active_DF <- cbind(hex_active_DF, eez_index[2])
-colnames(hex_active_DF)[ncol(hex_active_DF)] <- "EEZ" 
-
-write.csv(hex_active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_hex_DF.csv"), row.names = FALSE)
+# hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
+# proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
+# eez_index <- over(hex_active_DF_sp[, c('x', 'y')], eez)
+# hex_active_DF <- cbind(hex_active_DF, eez_index[2])
+# colnames(hex_active_DF)[ncol(hex_active_DF)] <- "EEZ" 
+# 
+# write.csv(hex_active_DF, file=paste0(test_main,'/',active_species,'/',active_species,'_',scenario,"_hex_DF.csv"), row.names = FALSE)
 
 
 myplots <- lapply(factors, plot_data_factor, hex=hex)
@@ -259,13 +262,63 @@ save_grid <- plot_grid(title,grid, ncol = 1, axis='b',rel_heights = c(0.03,1))
 # write to file
 dpi=300
 if (hex==TRUE) {
-  ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_hex_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
+  ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_big_hex_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
   
 } else {
   ggsave(paste0(test_main,'/',active_species,'/',active_species,'_',scenario,'_EEZ_plots.jpeg'),height=1200/dpi,width=3000/dpi,dpi=dpi, save_grid, device = 'jpeg')
 }
 }
 Sys.time()
+
+# test heat map matrices of analog locations
+end_mat <- data.frame(matrix(nrow=length(unique(myResultsDF$EEZ), ncol = length(unique(myResultsDF$EEZ)))))
+colnames(end_mat) <- unique(myResultsDF$EEZ)
+rownames(end_mat) <- unique(myResultsDF$EEZ)
+DissimData <- load(paste0(test_main,'/',active_species,'/','climateDissimilarity.RData'))
+DissimData <- dataStructureResult
+# hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
+# proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
+
+test_dissim <- head(DissimData, 50)
+points_dissim <- as.data.frame(cbind(test_dissim$x, test_dissim$y))
+names(points_dissim) <- c('x','y')
+points_dissim <- SpatialPointsDataFrame(coords = points_dissim[,c('x','y')], data = points_dissim)
+proj4string(points_dissim) <- proj4string(eez)
+
+points_analogs <- as.data.frame(cbind(test_dissim$analogNovelty.x, test_dissim$analogNovelty.y))
+names(points_analogs) <- c('x','y')
+points_analogs <- SpatialPointsDataFrame(coords = points_analogs[,c('x','y')], data = points_analogs)
+proj4string(points_analogs) <- proj4string(eez)
+
+test_dissim[,"originEEZ"] <- over(points_dissim,eez)[2]
+test_dissim[,'destEEZ'] <- over(points_analogs,eez)[2]
+
+# test_dissim$destEEZ <- apply(test_dissim, 1, function(x) if(is.na(x[17])) over(SpatialPoints(data.frame(lon=x[6], lat=x[7]),proj4string = CRS(proj4string(eez)))))
+for (i in 1:length(test_dissim$destEEZ)) {
+  if (is.na(test_dissim$destEEZ[[i]])) {
+    point <- data.frame(x = test_dissim$analogNovelty.x[[i]], y = test_dissim$analogNovelty.y[[i]])
+    point_sp <- SpatialPoints(point, proj4string = CRS(proj4string(eez)))
+    sea_area <- over(point_sp, eez)[3]
+    test_dissim[i,'destEEZ'] <- sea_area
+  }
+}
+
+length(unique(test_dissim$originEEZ))
+length(unique(test_dissim$destEEZ))
+eez_cols <- c(unique(test_dissim$destEEZ, unique(test_dissim$originEEZ)))
+eez_cols <- eez_cols[!is.na(eez_cols)]
+
+eez_sum_df <- data.frame(matrix(ncol=length(eez_cols), nrow = length(eez_cols)))
+row.names(eez_sum_df) <- eez_cols
+names(eez_sum_df) <- eez_cols
+
+# rows are donor EEZ, columns are inheriting
+for (eez in unique(myResultsDF$EEZ)) {
+  by_eez <- myResultsDF[myResultsDF$EEZ == eez, ]
+  eez_sum_df <- data.frame()
+  total <- 0
+  cols <- c(paste(eez,'retained'))
+}
 
 # ~2 hours per test run (7 species) with hex data
 
