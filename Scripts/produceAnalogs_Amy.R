@@ -30,7 +30,7 @@ require('dggridR')
 
 ## SETUP -----------------
 
-# oceanBasins <- shapefile("../Data/spatialInformation/goas_v01.shp")
+oceanBasins <- shapefile("../Data/spatialInformation/goas_v01.shp")
 eez <- shapefile("../Data/spatialInformation/eez.shp")
 shape <- raster("../Data/MaskRes025.tif")
 world <- map_data("world")
@@ -271,15 +271,13 @@ if (hex==TRUE) {
 Sys.time()
 
 # test heat map matrices of analog locations
-end_mat <- data.frame(matrix(nrow=length(unique(myResultsDF$EEZ), ncol = length(unique(myResultsDF$EEZ)))))
-colnames(end_mat) <- unique(myResultsDF$EEZ)
-rownames(end_mat) <- unique(myResultsDF$EEZ)
+
 DissimData <- load(paste0(test_main,'/',active_species,'/','climateDissimilarity.RData'))
 DissimData <- dataStructureResult
 # hex_active_DF_sp <- SpatialPointsDataFrame(coords = hex_active_DF[, c("x", "y")], data = hex_active_DF)
 # proj4string(hex_active_DF_sp) <- CRS("+proj=longlat +datum=WGS84")
 
-test_dissim <- head(DissimData, 50)
+test_dissim <- DissimData[,c('x', 'y', 'analogNovelty.x', 'analogNovelty.y')]
 points_dissim <- as.data.frame(cbind(test_dissim$x, test_dissim$y))
 names(points_dissim) <- c('x','y')
 points_dissim <- SpatialPointsDataFrame(coords = points_dissim[,c('x','y')], data = points_dissim)
@@ -293,13 +291,30 @@ proj4string(points_analogs) <- proj4string(eez)
 test_dissim[,"originEEZ"] <- over(points_dissim,eez)[2]
 test_dissim[,'destEEZ'] <- over(points_analogs,eez)[2]
 
-# test_dissim$destEEZ <- apply(test_dissim, 1, function(x) if(is.na(x[17])) over(SpatialPoints(data.frame(lon=x[6], lat=x[7]),proj4string = CRS(proj4string(eez)))))
-for (i in 1:length(test_dissim$destEEZ)) {
+
+# replace missing EEZs with closest in dest and origin
+# for (i in 1:nrow(test_dissim)) {
+#   if (is.na(test_dissim$destEEZ[[i]])) {
+#     point <- data.frame(x = test_dissim$analogNovelty.x[[i]], y = test_dissim$analogNovelty.y[[i]])
+#     point_sp <- SpatialPoints(point, proj4string = CRS(proj4string(eez)))
+#     nearest_eez <- eez$EEZ[which.min(gDistance(point_sp, eez, byid=TRUE))]
+#     test_dissim[i,'destEEZ'] <- nearest_eez
+#   }
+#   if (is.na(test_dissim$originEEZ[[i]])) {
+#     point <- data.frame(x = test_dissim$x[[i]], y = test_dissim$y[[i]])
+#     point_sp <- SpatialPoints(point, proj4string = CRS(proj4string(eez)))
+#     nearest_eez <- eez$EEZ[which.min(gDistance(point_sp, eez, byid=TRUE))]
+#     test_dissim[i,'originEEZ'] <- nearest_eez
+#   }
+# }
+
+# assing points outside of EEZs as "International Waters"
+for (i in 1:nrow(test_dissim)) {
   if (is.na(test_dissim$destEEZ[[i]])) {
-    point <- data.frame(x = test_dissim$analogNovelty.x[[i]], y = test_dissim$analogNovelty.y[[i]])
-    point_sp <- SpatialPoints(point, proj4string = CRS(proj4string(eez)))
-    sea_area <- over(point_sp, eez)[3]
-    test_dissim[i,'destEEZ'] <- sea_area
+    test_dissim[i,'destEEZ'] <- 'International Waters'
+  }
+  if (is.na(test_dissim$originEEZ[[i]])) {
+    test_dissim[i,'originEEZ'] <- 'International Waters'
   }
 }
 
@@ -307,18 +322,22 @@ length(unique(test_dissim$originEEZ))
 length(unique(test_dissim$destEEZ))
 eez_cols <- c(unique(test_dissim$destEEZ, unique(test_dissim$originEEZ)))
 eez_cols <- eez_cols[!is.na(eez_cols)]
+eez_cols <- unique(eez_cols)
 
 eez_sum_df <- data.frame(matrix(ncol=length(eez_cols), nrow = length(eez_cols)))
 row.names(eez_sum_df) <- eez_cols
 names(eez_sum_df) <- eez_cols
 
 # rows are donor EEZ, columns are inheriting
-for (eez in unique(myResultsDF$EEZ)) {
-  by_eez <- myResultsDF[myResultsDF$EEZ == eez, ]
-  eez_sum_df <- data.frame()
-  total <- 0
-  cols <- c(paste(eez,'retained'))
-}
+for (e in row.names(eez_sum_df)) {
+  e_df <- test_dissim[test_dissim$originEEZ==e,]
+  for (c in names(eez_sum_df)) {
+      eez_sum_df[e,c] <- nrow(e_df[e_df$destEEZ==c,])/nrow(e_df)
+      # eez_sum_df[e,c] <- nrow(test_dissim[test_dissim$destEEZ==c,])/nrow(test_dissim[test_dissim$originEEZ==e,])
+    }
+  }
+
+write.csv(eez_sum_df, file=paste0('../../backups/analog_matrixV3_IntWaters.csv'), row.names = TRUE)
 
 # ~2 hours per test run (7 species) with hex data
 
