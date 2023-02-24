@@ -26,6 +26,7 @@ library(tidyverse)
 library(ggplot2)
 library(cowplot)
 require('dggridR')
+library(tidyr)
 
 ## SETUP -----------------
 
@@ -108,7 +109,7 @@ plot_data_factor = function (column, hex=FALSE) {
 
 
 ## List available results
-scenario <- 'ssp119'
+scenario <- 'ssp585'
 hex <- TRUE
 # can add outer loop here to iterate over multiple scenarios if needed
 
@@ -270,7 +271,30 @@ Sys.time()
 
 # ~2 hours per test run (7 species) with hex data
 
-# Begin analog mapping ----
+# EEZ Aggregation ----
+
+# Dissim metrics per EEZ averaged by all species in that EEZ
+eezDF <- myResultsDF %>% group_by(EEZ) %>% 
+  summarise(Species = n_distinct(Species), p2 = sum(Average > 2)/sum(Average),
+            p4 = sum(Average > 4)/sum(Average),
+            Average = mean(Average), Max = mean(Max), .groups = "drop")
+
+# Dissim metrics per EEZ by species
+eez_sp_mean <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
+  pivot_wider(names_from = Species, values_from = Average) %>% select(-p2, -p4, -Max) %>%
+  summarise(across(everything(), ~first(na.omit(.))))
+
+eez_sp_p2 <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
+  pivot_wider(names_from = Species, values_from = p2) %>% select(-Average, -p4, -Max) %>%
+  summarise(across(everything(), ~first(na.omit(.)))) %>%
+  mutate(prop_sp = rowMeans(across(-EEZ) > 0, na.rm = TRUE))
+
+eez_sp_p4 <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
+  pivot_wider(names_from = Species, values_from = p4) %>% select(-Average, -p2, -Max) %>%
+  summarise(across(everything(), ~first(na.omit(.))))%>%
+  mutate(prop_sp = rowMeans(across(-EEZ) > 0, na.rm = TRUE))
+              
+# Climate Analog visualisation ----
 
 sal <- s[1:1000,]
 sal1<- sal[1:100,]
@@ -279,9 +303,7 @@ sal1<- sal[1:1000,]
 names(sal)[names(sal1) == 'x'] <- 'long'
 names(sal)[names(sal1) == 'y'] <- 'lat'
 
-
-
-# Mapping Salmo salar subset SSP585 ----
+# Mapping Salmo salar subset SSP585
 
 countries <- world(path = "../Data/countries")
 
@@ -320,7 +342,7 @@ ggplot() +
 ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset585.png", width = 6, height = 4)
 
 
-# Adding lines to connect climates ----
+# Adding lines to connect climates
 
 # new df with cell, lat and long values  
 df <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat, n.long = sal1$analogNovelty.x, 
@@ -350,64 +372,7 @@ ggplot() +
 
 ggsave(path = "../Results/climateDissimilarity/ssp585/Salmo salar/", filename ="S.salar_subset_lines585.png", width = 6, height = 4)
 
-# Mapping Salmo salar subset SSP119 ----
-
-load("../Results/climateDissimilarity/ssp119/Salmo salar/climateDissimilarity.RData")
-dat119 <- dataStructureResult
-dat119 <- dat119[1:100,]
-
-names(dat119)[names(dat119) == 'x'] <- 'long'
-names(dat119)[names(dat119) == 'y'] <- 'lat'
-
-df119 <- data.frame(cell = dat119$cell, c.long = dat119$long, c.lat = dat119$lat, 
-                    n.long = dat119$analogNovelty.x, n.lat = dat119$analogNovelty.y, 
-                    d.long = dat119$analogDisappearance.x, d.lat = dat119$analogDisappearance.y)
-
-ggplot() +
-  geom_map(
-    data = world, map = world,
-    aes(map_id = region),
-    color = "grey", fill = "lightgray", size = 0.01
-  ) + theme_bw()  +
-  geom_point(data=df119, aes(x = c.long, y = c.lat, color = "current")) +
-  geom_point(data=df119, aes(x = n.long, y = n.lat, color = "novel")) +
-  geom_point(data=df119, aes(x = d.long, y = d.lat, color = "disappearing")) + 
-  labs(title = "Salmo salar SSP1-1.9", x = "Longitude", y = "Latitude") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  xlim(-60, 60) + ylim(50, 80) +
-  scale_colour_brewer(palette = "Dark2", name = "Climate", 
-                      labels = c("Current",  "Disappearing", "Novel")) 
-
-ggsave(path = "../Results/climateDissimilarity/ssp119/Salmo salar/", filename ="S.salar_subset119.png", width = 6, height = 4)
-
-
-line_data <- data.frame(x = c(df119$c.long, df119$n.long), y = c(df119$c.lat, df119$n.lat), 
-                        cell = df119$cell)
-line_data2 <- data.frame(x = c(df119$c.long, df119$d.long), y = c(df119$c.lat, df119$d.lat), 
-                         cell = df119$cell)
-
-ggplot() +
-  geom_map(
-    data = world, map = world,
-    aes(map_id = region),
-    color = "grey", fill = "lightgray", size = 0.01
-  ) + theme_bw()  +
-  geom_path(data = line_data, aes(x = x, y = y, group = cell), color = "#B2ABD2", alpha = 0.4) +
-  geom_path(data = line_data2, aes(x = x, y = y, group = cell), color = "#F4A582", alpha = 0.4) +
-  geom_point(data=df119, aes(x = c.long, y = c.lat, color = "current")) +
-  geom_point(data=df119, aes(x = n.long, y = n.lat, color = "novel")) +
-  geom_point(data=df119, aes(x = d.long, y = d.lat, color = "disappearing")) + 
-  labs(title = "Salmo salar SSP1-1.9", x = "Longitude", y = "Latitude") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  xlim(-60, 60) + ylim(50, 80) +
-  scale_colour_brewer(palette = "Dark2", name = "Climate", 
-                      labels = c("Current",  "Disappearing", "Novel")) 
-
-ggsave(path = "../Results/climateDissimilarity/ssp119/Salmo salar/", filename ="S.salar_subset_lines119.png", width = 6, height = 4)
-
-
-
-# Mapping Salmo salar full dataset ----
+# Mapping Salmo salar full dataset
 
 full_dat <- data.frame(cell = sal$cell, c.long = sal$long, c.lat = sal$lat, 
                        n.long = sal$analogNovelty.x, 
@@ -430,25 +395,4 @@ ggplot() +
                       labels = c("Current",  "Disappearing", "Novel")) 
 
 
-### NEXT STEPS ####
 
-
-# change points to sf before you can denote by colour (later edit: this wasn't used but leaving in for future use)
-
-df_c <- data.frame(cell = sal1$cell, c.long = sal1$long, c.lat = sal1$lat)
-df_c <-st_as_sf(df_c %>% select(cell, c.long, c.lat), coords = c("c.long", "c.lat"), crs = 4326) %>%
-  rename(current = geometry) 
-
-df_n <- data.frame(cell = sal1$cell, n.long = sal1$analogNovelty.x, n.lat = sal1$analogNovelty.y)
-df_n <-st_as_sf(df_n %>% select(cell, n.long, n.lat), coords = c("n.long", "n.lat"), crs = 4326) %>%
-  rename(novel = geometry)
-                   
-df_d <- data.frame(cell = sal1$cell, d.long = sal1$analogDisappearance.x, 
-                   d.lat = sal1$analogDisappearance.y)
-df_d <-st_as_sf(df_d %>% select(cell, d.long, d.lat), coords = c("d.long", "d.lat"), crs = 4326) %>%
-  rename(disappearing = geometry)
-
-df_sf <- cbind(df_c, df_n, df_d)
-df_sf <- df_sf[ , -c(2, 3)]
-
-df_sf
