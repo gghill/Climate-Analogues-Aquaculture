@@ -285,11 +285,13 @@ eez_sp_mean <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>%
 
 eez_sp_p2 <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
   pivot_wider(names_from = Species, values_from = p2) %>% select(-Average, -p4, -Max) %>%
-  summarise(across(everything(), ~first(na.omit(.))))
+  summarise(across(everything(), ~first(na.omit(.)))) %>%
+  mutate(prop_sp = rowMeans(across(-EEZ) > 0, na.rm = TRUE))
 
 eez_sp_p4 <- myResultsDF %>% group_by(EEZ) %>% arrange(EEZ) %>% 
   pivot_wider(names_from = Species, values_from = p4) %>% select(-Average, -p2, -Max) %>%
-  summarise(across(everything(), ~first(na.omit(.))))
+  summarise(across(everything(), ~first(na.omit(.))))%>%
+  mutate(prop_sp = rowMeans(across(-EEZ) > 0, na.rm = TRUE))
               
 # Climate Analog visualisation ----
 
