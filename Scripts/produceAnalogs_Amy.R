@@ -33,7 +33,8 @@ require('dggridR')
 eez <- shapefile("../Data/spatialInformation/eez.shp")
 shape <- raster("../Data/MaskRes025.tif")
 world <- map_data("world")
-hex_grid <- dgconstruct(spacing=200, metric=TRUE, resround='down')
+# hex_grid <- dgconstruct(spacing=200, metric=TRUE, resround='down')
+hex_grid <- dgconstruct(res = 6)
 
 # Simplify and to make valid polygons
 # sf::sf_use_s2(FALSE)
@@ -82,7 +83,7 @@ plot_data_factor = function (column, hex=FALSE) {
         color = "grey", fill = "lightgray", size = 0.01
       ) +
       geom_sf(data = active_eezs_vis, aes(fill=NULL)) +
-      geom_sf(aes(fill=hex_active_plot[[column]]), alpha=0.8, color='white')    +
+      geom_sf(aes(fill=hex_active_plot[[column]]), alpha=0.8, linewidth = 0.01, color='white')    +
       labs(fill = column) + xlab("Longitude") +
       scale_x_continuous(labels = c("-120", "-60", "0", "60", "120")) +
       scale_fill_gradient(limits = c(0, scale_max), low = '#5BA300', high = '#B51963', na.value = 'white') +
