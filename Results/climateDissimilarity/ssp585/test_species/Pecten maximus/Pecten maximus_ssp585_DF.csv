@@ -1,28 +1,28 @@
-"Species","EEZ","p2","p4","Average","Max"
-"Pecten maximus","Algerian Exclusive Economic Zone",0,0,1.17347970050058,1.48111968450255
-"Pecten maximus","Belgian Exclusive Economic Zone",0.0714285714285714,0,0.629336115154201,2.12971052009499
-"Pecten maximus","Danish Exclusive Economic Zone",0.256857855361596,0.0199501246882793,1.42007842621157,4.91778954139678
-"Pecten maximus","Dutch Exclusive Economic Zone",0.076271186440678,0,0.909105611945719,3.65926229603801
-"Pecten maximus","Faeroe Exclusive Economic Zone",0,0,0.0845909376692682,0.353941145341409
-"Pecten maximus","French Exclusive Economic Zone",0.170087976539589,0.00586510263929619,0.876212784133069,5.42283785659771
-"Pecten maximus","German Exclusive Economic Zone",0.195744680851064,0.0170212765957447,1.24344111764564,4.51886349109202
-"Pecten maximus","Greek Exclusive Economic Zone",1,1,8.2923610758136,8.2923610758136
-"Pecten maximus","Guernsey Exclusive Economic Zone",0,0,0.0988245334889401,0.584253839923997
-"Pecten maximus","Icelandic Exclusive Economic Zone",0,0,0.114354206095503,0.737979099813701
-"Pecten maximus","Irish Exclusive Economic Zone",0.0177865612648221,0,0.160135230798976,2.50258168513611
-"Pecten maximus","Italian Exclusive Economic Zone",1,1,5.02545011325692,5.19466884685274
-"Pecten maximus","Jersey Exclusive Economic Zone",0,0,1.07920490617046,1.77742858215567
-"Pecten maximus","Joint regime area Sweden / Norway",1,0,2.92876056386425,2.98197890209309
-"Pecten maximus","Joint regime area United Kingdom / Denmark (Faeroe Islands)",0,0,0.298920643187123,0.427460205769198
-"Pecten maximus","Moroccan Exclusive Economic Zone",0.166666666666667,0,1.44002553359882,2.11405851177398
-"Pecten maximus","Norwegian Exclusive Economic Zone",0.115789473684211,0.00842105263157895,0.772868716120543,4.91778954139678
-"Pecten maximus","Overlapping claim Chafarinas Islands: Spain / Morocco",0,0,1.43505410647187,1.43505410647187
-"Pecten maximus","Overlapping claim Melilla: Spain / Morocco",0,0,1.41875334575597,1.41875334575597
-"Pecten maximus","Portuguese Exclusive Economic Zone",0.5,0,1.84385364546421,3.53609990430717
-"Pecten maximus","Russian Exclusive economic Zone",0,0,0.341140667985009,0.771812658149844
-"Pecten maximus","Spanish Exclusive Economic Zone",0.289473684210526,0.0087719298245614,1.51294504170663,4.19617351650263
-"Pecten maximus","Svalbard Exclusive Economic Zone",0,0,0.207364067315035,0.447539132986085
-"Pecten maximus","Swedish Exclusive Economic Zone",0.511278195488722,0.0601503759398496,1.76965098577947,4.91778954139678
-"Pecten maximus","Tunisian Exclusive Economic Zone",1,1,5.02545011325692,5.19466884685274
-"Pecten maximus","Turkish Exclusive Economic Zone",1,1,8.2923610758136,8.2923610758136
-"Pecten maximus","United Kingdom Exclusive Economic Zone",0.0250297973778308,0,0.303477706310998,3.36096679208721
+"Species","EEZ","p2","p4","Average","Max","eez_coverage"
+"Pecten maximus","Algerian Exclusive Economic Zone",0,0,1.17347970050058,1.48111968450255,0.00454545454545455
+"Pecten maximus","Belgian Exclusive Economic Zone",0.0714285714285714,0,0.629336115154201,2.12971052009499,0.875
+"Pecten maximus","Danish Exclusive Economic Zone",0.256857855361596,0.0199501246882793,1.42007842621157,4.91778954139678,0.472877358490566
+"Pecten maximus","Dutch Exclusive Economic Zone",0.076271186440678,0,0.909105611945719,3.65926229603801,0.653739612188366
+"Pecten maximus","Faeroe Exclusive Economic Zone",0,0,0.0845909376692682,0.353941145341409,0.0531400966183575
+"Pecten maximus","French Exclusive Economic Zone",0.170087976539589,0.00586510263929619,0.876212784133069,5.42283785659771,0.205359831376092
+"Pecten maximus","German Exclusive Economic Zone",0.195744680851064,0.0170212765957447,1.24344111764564,4.51886349109202,0.392976588628763
+"Pecten maximus","Greek Exclusive Economic Zone",1,1,8.2923610758136,8.2923610758136,0.00205902539464653
+"Pecten maximus","Guernsey Exclusive Economic Zone",0,0,0.0988245334889401,0.584253839923997,1
+"Pecten maximus","Icelandic Exclusive Economic Zone",0,0,0.114354206095503,0.737979099813701,0.0483552631578947
+"Pecten maximus","Irish Exclusive Economic Zone",0.0177865612648221,0,0.160135230798976,2.50258168513611,0.34610123119015
+"Pecten maximus","Italian Exclusive Economic Zone",1,1,5.02545011325692,5.19466884685274,0.00178890876565295
+"Pecten maximus","Jersey Exclusive Economic Zone",0,0,1.07920490617046,1.77742858215567,1
+"Pecten maximus","Joint regime area Sweden / Norway",1,0,2.92876056386425,2.98197890209309,1
+"Pecten maximus","Joint regime area United Kingdom / Denmark (Faeroe Islands)",0,0,0.298920643187123,0.427460205769198,0.0641025641025641
+"Pecten maximus","Moroccan Exclusive Economic Zone",0.166666666666667,0,1.44002553359882,2.11405851177398,0.00757575757575758
+"Pecten maximus","Norwegian Exclusive Economic Zone",0.115789473684211,0.00842105263157895,0.772868716120543,4.91778954139678,0.0972563472563473
+"Pecten maximus","Overlapping claim Chafarinas Islands: Spain / Morocco",0,0,1.43505410647187,1.43505410647187,1
+"Pecten maximus","Overlapping claim Melilla: Spain / Morocco",0,0,1.41875334575597,1.41875334575597,1
+"Pecten maximus","Portuguese Exclusive Economic Zone",0.5,0,1.84385364546421,3.53609990430717,0.0274725274725275
+"Pecten maximus","Russian Exclusive economic Zone",0,0,0.341140667985009,0.771812658149844,0.0072337962962963
+"Pecten maximus","Spanish Exclusive Economic Zone",0.289473684210526,0.0087719298245614,1.51294504170663,4.19617351650263,0.0647727272727273
+"Pecten maximus","Svalbard Exclusive Economic Zone",0,0,0.207364067315035,0.447539132986085,0.00211640211640212
+"Pecten maximus","Swedish Exclusive Economic Zone",0.511278195488722,0.0601503759398496,1.76965098577947,4.91778954139678,0.0486111111111111
+"Pecten maximus","Tunisian Exclusive Economic Zone",1,1,5.02545011325692,5.19466884685274,0.00793650793650794
+"Pecten maximus","Turkish Exclusive Economic Zone",1,1,8.2923610758136,8.2923610758136,0.0028957528957529
+"Pecten maximus","United Kingdom Exclusive Economic Zone",0.0250297973778308,0,0.303477706310998,3.36096679208721,0.343570843570844
