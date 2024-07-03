@@ -21,8 +21,8 @@ Anguilla australis;Fish
 Anguilla bicolor;Fish
 Anguilla japonica;Fish
 Anguilla rostrata;Fish
-Anoplopoma fimbria ;Fish
-Apostichopus japonicus;Echinoderm
+Anoplopoma fimbria;Fish
+Apostichopus japonicus;Miscellaneous
 Argopecten irradians;Mollusc
 Argopecten purpuratus;Mollusc
 Argopecten ventricosus;Mollusc
@@ -53,7 +53,7 @@ Cerastoderma glaucum;Mollusc
 Chaetodipterus faber;Fish
 Chamelea gallina;Mollusc
 Chanos chanos;Fish
-Chelon aurata ;Fish
+Chelon auratus;Fish
 Chelon saliens;Fish
 Chlamys farreri;Mollusc
 Chondracanthus chamissoi;Algae
@@ -62,7 +62,7 @@ Cladosiphon okamuranus;Algae
 Codium fragile;Algae
 Concholepas concholepas;Mollusc
 Coregonus lavaretus;Fish
-Coryphaena hippurus ;Fish
+Coryphaena hippurus;Fish
 Crassostrea corteziensis;Mollusc
 Crassostrea rhizophorae;Mollusc
 Crassostrea tulipa;Mollusc
@@ -80,7 +80,7 @@ Diplodus puntazzo;Fish
 Diplodus sargus;Fish
 Diplodus sargus sargus;Fish
 Diplodus vulgaris;Fish
-Dormitator latifrons ;Fish
+Dormitator latifrons;Fish
 Eleutheronema tetradactylum;Fish
 Ellochelon vaigiensis;Fish
 Emmelichthys nitidus nitidus;Fish
@@ -105,7 +105,7 @@ Gelidium amansii;Algae
 Gnathanodon speciosus;Fish
 Gomphina veneriformis;Mollusc
 Gracilaria gracilis;Algae
-Haliotis discus ;Mollusc
+Haliotis discus;Mollusc
 Haliotis discus hannai;Mollusc
 Haliotis diversicolor;Mollusc
 Haliotis iris;Mollusc
@@ -118,7 +118,7 @@ Hiatula diphos;Mollusc
 Hippoglossus hippoglossus;Fish
 Hippopus hippopus;Mollusc
 Huso huso;Fish
-Hyporthodus septumfasciatus;Fish
+Hyporthodus septemfasciatus;Fish
 Kappaphycus alvarezii;Algae
 Konosirus punctatus;Fish
 Laminaria digitata;Algae
@@ -127,9 +127,9 @@ Larkinia grandis;Mollusc
 Lateolabrax japonicus;Fish
 Lates calcarifer;Fish
 Lethrinus miniatus;Fish
-Leukoma staminae;Mollusc
+Leukoma staminea;Mollusc
 Liza ramada;Fish
-Loxechinus albus;Echinoderm
+Loxechinus albus;Miscellaneous
 Lutjanus argentimaculatus;Fish
 Lutjanus bohar;Fish
 Lutjanus erythropterus;Fish
@@ -138,7 +138,7 @@ Lutjanus guttatus;Fish
 Lutjanus johnii;Fish
 Lutjanus malabaricus;Fish
 Lutjanus purpureus;Fish
-Lutjanus russelli;Fish
+Lutjanus russellii;Fish
 Lutjanus sebae;Fish
 Macrocystis pyrifera;Algae
 Mactra glabrata;Mollusc
@@ -204,14 +204,14 @@ Pagrus major;Fish
 Pagrus pagrus;Fish
 Palaemon adspersus;Crustacean
 Palaemon serratus;Crustacean
-Palaemonetes varians;Crustacean
+Palaemon varians;Crustacean
 Palmaria palmata;Algae
 Panopea generosa;Mollusc
 Panulirus argus;Crustacean
 Panulirus japonicus;Crustacean
 Panulirus polyphagus;Crustacean
 Paphia gallus;Mollusc
-Paracentrotus lividus;Echinoderm
+Paracentrotus lividus;Miscellaneous
 Paralichthys microps;Fish
 Paralichthys olivaceus;Fish
 Paratapes undulatus;Mollusc
@@ -239,13 +239,13 @@ Pinctada fucata;Mollusc
 Pinctada margaritifera;Mollusc
 Pinctada maxima;Mollusc
 Placopecten magellanicus;Mollusc
-Planiliza haematocheilus;Chordata
-Planiliza macrolepis ;Fish
+Planiliza haematocheilus;Fish
+Planiliza macrolepis;Fish
 Platax orbicularis;Fish
 Platichthys flesus;Fish
 Plectropomus maculatus;Fish
 Pleurogrammus azonus;Fish
-Pleuronectes platessa ;Fish
+Pleuronectes platessa;Fish
 Polititapes aureus;Mollusc
 Polititapes rhomboides;Mollusc
 Pollachius pollachius;Fish
@@ -259,7 +259,7 @@ Pseudopleuronectes americanus;Fish
 Pteria penguin;Mollusc
 Pyropia columbina;Algae
 Pyropia tenera;Algae
-Pyura stolonifera;Chordata
+Pyura stolonifera;Miscellaneous
 Rachycentron canadum;Fish
 Rhabdosargus sarba;Fish
 Ruditapes decussatus;Mollusc
@@ -293,7 +293,7 @@ Seriola quinqueradiata;Fish
 Seriola rivoliana;Fish
 Siganus canaliculatus;Fish
 Siganus fuscescens;Fish
-Siganus guttatus ;Fish
+Siganus guttatus;Fish
 Siganus javus;Fish
 Siganus lineatus;Fish
 Siganus rivulatus;Fish
@@ -316,7 +316,7 @@ Thunnus thynnus;Fish
 Tilapia guineensis;Fish
 Trachinotus blochii;Fish
 Trachinotus carolinus;Fish
-Trachinotus goodei ;Fish
+Trachinotus goodei;Fish
 Trachinotus ovatus;Fish
 Trachurus japonicus;Fish
 Tresus nuttallii;Mollusc
